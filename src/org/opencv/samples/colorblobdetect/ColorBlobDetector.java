@@ -68,12 +68,17 @@ public class ColorBlobDetector {
     }
 
     public void process(Mat rgbaImage) {
+        // downsample the original image twice
         Imgproc.pyrDown(rgbaImage, mPyrDownMat);
         Imgproc.pyrDown(mPyrDownMat, mPyrDownMat);
 
+        // Convert the image's colors from rgb to hsv
         Imgproc.cvtColor(mPyrDownMat, mHsvMat, Imgproc.COLOR_RGB2HSV_FULL);
 
+        // mMask is 255 where mLowerBound <= mHsvMat <= MHigherBound
         Core.inRange(mHsvMat, mLowerBound, mUpperBound, mMask);
+        
+        // dilate mMask to mDilatedMask, I think by a factor of 3
         Imgproc.dilate(mMask, mDilatedMask, new Mat());
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -95,6 +100,7 @@ public class ColorBlobDetector {
         each = contours.iterator();
         while (each.hasNext()) {
             MatOfPoint contour = each.next();
+            // only retain the contour if its area is a large enough fraction of maxarea
             if (Imgproc.contourArea(contour) > mMinContourArea*maxArea) {
                 Core.multiply(contour, new Scalar(4,4), contour);
                 mContours.add(contour);

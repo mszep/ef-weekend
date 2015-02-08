@@ -163,10 +163,19 @@ public class ColorBlobDetectionActivity extends Activity implements OnTouchListe
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
+        RECT_COLOR = new Scalar(0,127,0,127);
 
         if (mIsColorSelected) {
             mDetector.process(mRgba);
             List<MatOfPoint> contours = mDetector.getContours();
+
+            //added by mark; get enclosing rectangle
+            Iterator<MatOfPoint> each = contours.iterator();
+            while (each.hasNext()) {
+                MatOfPoint cont = each.next();
+                Rect r = Imgproc.boundingRect(cont);
+                Imgproc.rectangle(mRgba, r, RECT_COLOR)
+        }
             Log.e(TAG, "Contours count: " + contours.size());
             Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
 
